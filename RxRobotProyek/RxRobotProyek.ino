@@ -29,6 +29,13 @@ int prevServoY;
 
 int data[3];
 
+int RightSpd = 120;
+int LeftSpd = 120;
+
+
+void(* resetFunc) (void) = 0; // Deklarasi fungsi untuk mereset Arduino
+
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -44,9 +51,6 @@ void setup() {
   myservo2.attach(3);  // attaches the servo on pin 3 to the servo object
 
   delay(10);
-
-  myservo1.write(90);
-  myservo2.write(90);
 
   radio.begin();
   if (!radio.begin()) {
@@ -68,25 +72,44 @@ void loop() {
     //Pengecekan Data mode
     Serial.print("Mode: ");
     Serial.println(mode);
-//    delay(100);
+    //    delay(100);
 
-    if (mode == 0) {
+    if (mode == 1) {
       carMode();
       Serial.println("Mobil");
+      delay(50);
     } else {
+      berhenti(0, 0);
       servoMode();
       Serial.println("Gripper");
+      delay(50);
     }
-  } else {
+
+
+  }
+
+  else {
     Serial.println("Radio tidak terbaca");
-    delay(1000);
+    myservo1.write(0);
+    myservo2.write(0);
+    berhenti(0, 0);
+    delay(2000);
+    if (radio.available()) {
+      return;
+    }
+    resetFunc(); // Memanggil fungsi untuk mereset Arduino
   }
 }
 
 void servoMode() {
   // Ubah nilai potensio menjadi sudut
-  int servoX = map(data[2], -9, 10, 0, 180);
-  int servoY = map(data[1], -9, 10, 0, 180);
+
+  Serial.print("data 1: ");
+  Serial.println(data[1]);
+  Serial.println("data 2: ");
+  Serial.println(data[2]);
+  int servoX = data[2];
+  int servoY = data[1];
 
   // Menggerakkan servo hanya jika ada perubahan sudut
   if (servoX != prevServoX) {
@@ -99,33 +122,40 @@ void servoMode() {
     prevServoY = servoY;
   }
 
-//  // Tunggu sebentar sebelum membaca nilai potensio berikutnya
-//  delay(200);
+  //  // Tunggu sebentar sebelum membaca nilai potensio berikutnya
+  delay(100);
 }
 
 void carMode() {
-  int RightSpd = map(data[1], -9, 10, 0, 254); //Send X axis data
-  int LeftSpd = map(data[2], -9, 10, 0, 254);  //Send Y axis data
 
-  if (data[1] > 0) {
+  Serial.print("data 1: ");
+  Serial.println(data[1]);
+  Serial.println("data 2: ");
+  Serial.println(data[2]);
+
+  if (data[1] > 5) {
     //forward
-    maju(RightSpd, LeftSpd);
-  } else if (data[1] < 3) {
+    maju(RightSpd, RightSpd);
+    Serial.println("MAJU");
+  } else if (data[1] < -5) {
     //backward
-    mundur(RightSpd, LeftSpd);
-  } else if (data[2] > 0) {
+    mundur(RightSpd, RightSpd);
+    Serial.println("MUNDUR");
+  } else if (data[2] > 3) {
     //left
-    kiri(RightSpd, LeftSpd);
-  } else if (data[2] < 3) {
+    kiri(LeftSpd, LeftSpd);
+    Serial.println("KIRI");
+  } else if (data[2] < -3) {
     //right
-    kanan(RightSpd, LeftSpd);
+    kanan(LeftSpd, LeftSpd);
+    Serial.println("KANAN");
   } else {
     //stop car
     analogWrite(enbA, 0);
     analogWrite(enbB, 0);
   }
 
-  delay(100);
+  delay(50);
 }
 
 void maju(int spdA, int spdB) {
@@ -162,4 +192,13 @@ void kiri(int spdA, int spdB) {
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
+}
+
+void berhenti(int spdA, int spdB) {
+  analogWrite(enbA, spdA);
+  analogWrite(enbB, spdB);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
 }
