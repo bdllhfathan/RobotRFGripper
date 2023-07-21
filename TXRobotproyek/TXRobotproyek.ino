@@ -143,12 +143,31 @@ void loop() {
     robotMode();
     readModeMillis = 0;
   }
+
   nilaiX = a.acceleration.x;
   nilaiY = a.acceleration.y;
 
-  data[1] = nilaiX;
-  data[2] = nilaiY;
+  if (isRobotMode) {
+    Serial.println("Gripper");
+    data[0] = 0; // Mode gripper
 
+    data[1] = map(nilaiX, -6, 8, 0, 180);
+    data[2] = map(nilaiY, -6, 8, 0, 180);
+    Serial.print("data 1: ");
+    Serial.println(data[1]);
+    Serial.println("data 2: ");
+    Serial.println(data[2]);
+
+  } else {
+    Serial.println("Mobil");
+    data[0] = 1; // Mode kendali mobil
+    data[1] = nilaiX;
+    data[2] = nilaiY;
+
+    Serial.println(data[1]);
+    Serial.println("data 2: ");
+    Serial.println(data[2]);
+  }
 
   // Kirim data melalui radio
   radio.write(&data, sizeof(data));
@@ -162,13 +181,5 @@ void robotMode() {
     isRobotMode = !isRobotMode;
     delay(1000);
     return;
-  }
-
-  if (isRobotMode) {
-    Serial.println("Gripper");
-    data[0] = 0; // Mode gripper
-  } else {
-    Serial.println("Mobil");
-    data[0] = 1; // Mode kendali mobil
   }
 }
