@@ -1,0 +1,42 @@
+PINOUT :
+1. RX Robot
+#Pin RF
+CE -> 9
+CSN -> 10
+SCK -> 13
+MOS ->11
+MIS ->12
+
+#Pin Motor Driver
+IN 1 -> 2
+IN 2 -> 4
+IN 3 -> 7
+IN 4 -> A0/14
+Ena -> 5
+Enb -> 6
+
+#Servo
+Servo 1 -> 8
+Servo 2 -> 3
+
+2. TX ROBOT
+#Button -> 2
+
+#Pin RF(note: Perhatikan Addressnya pastikan tidak sama dengan robot lain)
+CE -> 8
+CSN -> 9
+SCK -> 13
+MOS ->11
+MIS ->12
+
+#Pin MPU
+SDA - > A4
+SCL -> A5
+
+Library :
+- MPU6050 :
+Adafruit_MPU6050
+link : https://github.com/adafruit/Adafruit_MPU6050
+- NRF :
+ RF24
+link : https://github.com/nRF24/RF24
