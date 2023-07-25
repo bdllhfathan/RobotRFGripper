@@ -5,11 +5,12 @@
 
 //Radio Set
 RF24 radio(9, 10); // CE, CSN
-const byte address[6] = "00001";
+const byte address[6] = "00007"; //Pastikan Address dibedakan dengan robot lain
 
 // Inisialisasi objek Servo
 Servo myservo1;
 Servo myservo2;
+
 
 //Motor set
 //Define enable pins of the Motors
@@ -27,10 +28,13 @@ const int IN4 = 14;    //Right Motor (-)
 int prevServoX;
 int prevServoY;
 
+int posX;
+int posY;
+
 int data[3];
 
-int RightSpd = 120;
-int LeftSpd = 120;
+int RightSpd;
+int LeftSpd;
 
 
 void(* resetFunc) (void) = 0; // Deklarasi fungsi untuk mereset Arduino
@@ -86,12 +90,10 @@ void loop() {
     }
 
 
-  }
-
-  else {
+  } else {
     Serial.println("Radio tidak terbaca");
-    myservo1.write(0);
-    myservo2.write(0);
+    myservo1.write(prevServoX);
+    myservo2.write(prevServoX);
     berhenti(0, 0);
     delay(2000);
     if (radio.available()) {
@@ -103,7 +105,6 @@ void loop() {
 
 void servoMode() {
   // Ubah nilai potensio menjadi sudut
-
   Serial.print("data 1: ");
   Serial.println(data[1]);
   Serial.println("data 2: ");
@@ -112,18 +113,51 @@ void servoMode() {
   int servoY = data[1];
 
   // Menggerakkan servo hanya jika ada perubahan sudut
-  if (servoX != prevServoX) {
-    myservo1.write(servoX);
-    prevServoX = servoX;
+  //  if (servoX != prevServoX) {
+  if (servoX >= 4) {
+    posX = posX + 10;
+    Serial.print("posX = ");
+    Serial.println(posX);
+    delay(20);
+
+  } else if (servoX <= -4) {
+    posX = posX - 10;
+    Serial.print("posY = ");
+    Serial.println(posY);
+    delay(20);
+  }
+  //  }
+
+  
+
+  //  if (servoY != prevServoY) {
+  if (servoY > 4) {
+    posY = posY + 4;
+    delay(20);
+
+  } else if (servoY < -4) {
+    posY = posY - 10;
+    delay(20);
   }
 
-  if (servoY != prevServoY) {
-    myservo2.write(servoY);
-    prevServoY = servoY;
+  if (posX >180 ){
+    posX = 180;
+  }else if(posX < 0){
+    posX = 0;
+  }else if(posY > 180){
+    posY = 180;
+  }else if(posY < 0){
+    posY = 0;
   }
+
+
+  myservo1.write(posX);
+  myservo2.write(posY);
+  //    prevServoY = servoY;
+  //  }
 
   //  // Tunggu sebentar sebelum membaca nilai potensio berikutnya
-  delay(100);
+  delay(50);
 }
 
 void carMode() {
@@ -133,70 +167,100 @@ void carMode() {
   Serial.println("data 2: ");
   Serial.println(data[2]);
 
-  if (data[1] > 5) {
+  if (data[1] > 3) {
     //forward
-    maju(RightSpd, RightSpd);
+    maju();
     Serial.println("MAJU");
-  } else if (data[1] < -5) {
+  } else if (data[1] < -3) {
     //backward
-    mundur(RightSpd, RightSpd);
+    mundur();
     Serial.println("MUNDUR");
   } else if (data[2] > 3) {
     //left
-    kiri(LeftSpd, LeftSpd);
+    kiri();
     Serial.println("KIRI");
   } else if (data[2] < -3) {
     //right
-    kanan(LeftSpd, LeftSpd);
+    kanan();
     Serial.println("KANAN");
   } else {
     //stop car
-    analogWrite(enbA, 0);
-    analogWrite(enbB, 0);
+    RightSpd = 0;
+    LeftSpd = 0;
   }
+
+  analogWrite(enbA, RightSpd); // Send PWM signal to motor A
+  analogWrite(enbB, LeftSpd); // Send PWM signal to motor B
 
   delay(50);
 }
 
-void maju(int spdA, int spdB) {
-  analogWrite(enbA, spdA);
-  analogWrite(enbB, spdB);
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-}
-
-void mundur(int spdA, int spdB) {
-  analogWrite(enbA, spdA);
-  analogWrite(enbB, spdB);
+void maju() {
+  //  analogWrite(enbA, spdA);
+  //  analogWrite(enbB, spdB);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
+
+  RightSpd = map(data[1], 3, 10, 90, 255);
+  LeftSpd = map(data[1], 3, 10, 90, 255);
+
 }
 
-void kanan(int spdA, int spdB) {
-  analogWrite(enbA, spdA);
-  analogWrite(enbB, spdB);
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-}
-
-void kiri(int spdA, int spdB) {
-  analogWrite(enbA, spdA);
-  analogWrite(enbB, spdB);
+void mundur() {
+  //  analogWrite(enbA, spdA);
+  //  analogWrite(enbB, spdB);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+
+  RightSpd = map(data[1], -9, 0, 0, 255);
+  LeftSpd = map(data[1], -9, 0, 0, 255);
+}
+
+void kanan() {
+  //  analogWrite(enbA, spdA);
+  //  analogWrite(enbB, spdB);
+  //  digitalWrite(IN1, LOW);
+  //  digitalWrite(IN2, HIGH);
+  //  digitalWrite(IN3, HIGH);
+  //  digitalWrite(IN4, LOW);
+
+  int RLMap = map(data[2], -9, -3, 0, 255);
+  RightSpd = RightSpd - RLMap;
+  LeftSpd = LeftSpd + RLMap;
+  //Membatasi Ukuran Nilai tetap di 0-255
+  if (RightSpd < 0) {
+    RightSpd = 0;
+  }
+  if (LeftSpd > 255) {
+    LeftSpd = 255;
+  }
+}
+
+void kiri() {
+  //  analogWrite(enbA, spdA);
+  //  analogWrite(enbB, spdB);
+  //  digitalWrite(IN1, HIGH);
+  //  digitalWrite(IN2, LOW);
+  //  digitalWrite(IN3, LOW);
+  //  digitalWrite(IN4, HIGH);
+
+  int RLMap = map(data[2], 3, 9, 100, 255);
+  RightSpd = RightSpd + RLMap;
+  LeftSpd = LeftSpd - RLMap;
+  //Membatasi Ukuran Nilai tetap di 0-255
+  if (LeftSpd < 0) {
+    LeftSpd = 0;
+  }
+  if (RightSpd > 255) {
+    RightSpd = 255;
+  }
 }
 
 void berhenti(int spdA, int spdB) {
-  analogWrite(enbA, spdA);
-  analogWrite(enbB, spdB);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
