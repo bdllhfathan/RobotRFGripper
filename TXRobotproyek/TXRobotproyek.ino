@@ -16,7 +16,7 @@ elapsedMillis readModeMillis;
 //unsigned long writeMpuSensorInterval = 500;
 unsigned long readModeInterval = 1000; // Interval waktu baca mode, 1000ms (1 detik)
 
-const byte address[6] = "00001";
+const byte address[6] = "00007";
 
 const int buttonPin1 = 2; // Nomor pin pushbutton
 int buttonState1 = 1; // variabel untuk membaca status pushbutton
@@ -147,12 +147,13 @@ void loop() {
   nilaiX = a.acceleration.x;
   nilaiY = a.acceleration.y;
 
+  data[1] = nilaiX;
+  data[2] = nilaiY;
+
   if (isRobotMode) {
     Serial.println("Gripper");
     data[0] = 0; // Mode gripper
 
-    data[1] = map(nilaiX, -6, 8, 0, 180);
-    data[2] = map(nilaiY, -6, 8, 0, 180);
     Serial.print("data 1: ");
     Serial.println(data[1]);
     Serial.println("data 2: ");
@@ -161,8 +162,6 @@ void loop() {
   } else {
     Serial.println("Mobil");
     data[0] = 1; // Mode kendali mobil
-    data[1] = nilaiX;
-    data[2] = nilaiY;
 
     Serial.println(data[1]);
     Serial.println("data 2: ");
