@@ -4,8 +4,8 @@
 #include <Servo.h>
 
 //Radio Set
-RF24 radio(9, 10); // CE, CSN
-const byte address[6] = "00007"; //Pastikan Address dibedakan dengan robot lain
+RF24 radio(10, 9); // CE, CSN;
+const byte address[6] = "00001 "; //Pastikan Address dibedakan dengan robot lain
 
 // Inisialisasi objek Servo
 Servo myservo1;
@@ -76,11 +76,15 @@ void loop() {
     //Pengecekan Data mode
     Serial.print("Mode: ");
     Serial.println(mode);
-    //    delay(100);
-
+    
     if (mode == 1) {
+      //Menjalankan Fungsi Penggerak mobil
       carMode();
       Serial.println("Mobil");
+      //Menetapkan posisi gripper terakhir
+      myservo1.write(posX);
+      myservo2.write(posY);
+      
       delay(50);
     } else {
       berhenti(0, 0);
@@ -92,8 +96,8 @@ void loop() {
 
   } else {
     Serial.println("Radio tidak terbaca");
-    myservo1.write(prevServoX);
-    myservo2.write(prevServoX);
+    myservo1.write(posX);
+    myservo2.write(posY);
     berhenti(0, 0);
     delay(2000);
     if (radio.available()) {
@@ -104,17 +108,15 @@ void loop() {
 }
 
 void servoMode() {
-  // Ubah nilai potensio menjadi sudut
-  Serial.print("data 1: ");
+  
+  Serial.print("data 1: \t");
   Serial.println(data[1]);
   Serial.println("data 2: ");
   Serial.println(data[2]);
   int servoX = data[2];
   int servoY = data[1];
-
-  // Menggerakkan servo hanya jika ada perubahan sudut
-  //  if (servoX != prevServoX) {
-  if (servoX >= 4) {
+  
+  if (servoX >= 4) { 
     posX = posX + 10;
     Serial.print("posX = ");
     Serial.println(posX);
@@ -122,15 +124,11 @@ void servoMode() {
 
   } else if (servoX <= -4) {
     posX = posX - 10;
-    Serial.print("posY = ");
-    Serial.println(posY);
+   Serial.print("posX = ");
+   Serial.println(posX);
     delay(20);
   }
-  //  }
-
   
-
-  //  if (servoY != prevServoY) {
   if (servoY > 4) {
     posY = posY + 4;
     delay(20);
@@ -153,10 +151,8 @@ void servoMode() {
 
   myservo1.write(posX);
   myservo2.write(posY);
-  //    prevServoY = servoY;
-  //  }
 
-  //  // Tunggu sebentar sebelum membaca nilai potensio berikutnya
+  //  // Tunggu sebentar sebelum membaca kode berikutnya
   delay(50);
 }
 
@@ -209,24 +205,16 @@ void maju() {
 }
 
 void mundur() {
-  //  analogWrite(enbA, spdA);
-  //  analogWrite(enbB, spdB);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
 
-  RightSpd = map(data[1], -9, 0, 0, 255);
-  LeftSpd = map(data[1], -9, 0, 0, 255);
+  RightSpd = map(data[1], -4, -9, 0, 255);
+  LeftSpd = map(data[1], -4, -9, 0, 255);
 }
 
 void kanan() {
-  //  analogWrite(enbA, spdA);
-  //  analogWrite(enbB, spdB);
-  //  digitalWrite(IN1, LOW);
-  //  digitalWrite(IN2, HIGH);
-  //  digitalWrite(IN3, HIGH);
-  //  digitalWrite(IN4, LOW);
 
   int RLMap = map(data[2], -9, -3, 0, 255);
   RightSpd = RightSpd - RLMap;
@@ -241,12 +229,6 @@ void kanan() {
 }
 
 void kiri() {
-  //  analogWrite(enbA, spdA);
-  //  analogWrite(enbB, spdB);
-  //  digitalWrite(IN1, HIGH);
-  //  digitalWrite(IN2, LOW);
-  //  digitalWrite(IN3, LOW);
-  //  digitalWrite(IN4, HIGH);
 
   int RLMap = map(data[2], 3, 9, 100, 255);
   RightSpd = RightSpd + RLMap;
