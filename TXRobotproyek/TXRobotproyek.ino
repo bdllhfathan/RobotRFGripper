@@ -10,13 +10,9 @@ RF24 radio(8, 9);
 Adafruit_MPU6050 mpu;
 
 elapsedMillis readModeMillis;
-//
-//elapsedMillis writeMpuSensorMillis;
-//
-//unsigned long writeMpuSensorInterval = 500;
 unsigned long readModeInterval = 1000; // Interval waktu baca mode, 1000ms (1 detik)
 
-const byte address[6] = "00007";
+const byte address[6] = "00001";
 
 const int buttonPin1 = 2; // Nomor pin pushbutton
 int buttonState1 = 1; // variabel untuk membaca status pushbutton
@@ -152,7 +148,7 @@ void loop() {
 
   if (isRobotMode) {
     Serial.println("Gripper");
-    data[0] = 0; // Mode gripper
+    data[0] = 0; //Mode gripper
 
     Serial.print("data 1: ");
     Serial.println(data[1]);
@@ -163,6 +159,7 @@ void loop() {
     Serial.println("Mobil");
     data[0] = 1; // Mode kendali mobil
 
+    Serial.print("data 1: ");
     Serial.println(data[1]);
     Serial.println("data 2: ");
     Serial.println(data[2]);
@@ -181,4 +178,5 @@ void robotMode() {
     delay(1000);
     return;
   }
+
 }
