@@ -10,6 +10,10 @@ RF24 radio(8, 9);
 Adafruit_MPU6050 mpu;
 
 elapsedMillis readModeMillis;
+//
+//elapsedMillis writeMpuSensorMillis;
+//
+//unsigned long writeMpuSensorInterval = 500;
 unsigned long readModeInterval = 1000; // Interval waktu baca mode, 1000ms (1 detik)
 
 const byte address[6] = "00001";
@@ -121,15 +125,15 @@ void setup() {
   Serial.begin(9600);
   pinMode(buttonPin1, INPUT_PULLUP);
 
+  //Mempersiapkan Sensor yang digunakan
   setMpu();
-
   delay(100);
-
   setRF();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+
   // Membaca nilai sensor MPU
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
@@ -147,23 +151,19 @@ void loop() {
   data[2] = nilaiY;
 
   if (isRobotMode) {
-    Serial.println("Gripper");
-    data[0] = 0; //Mode gripper
-
-    Serial.print("data 1: ");
-    Serial.println(data[1]);
-    Serial.println("data 2: ");
-    Serial.println(data[2]);
-
+    Serial.print("Mode: Gripper \t");
+    data[0] = 0; // Mode Kendali gripper
   } else {
-    Serial.println("Mobil");
+    Serial.print("Mode: Mobil \t");
     data[0] = 1; // Mode kendali mobil
-
-    Serial.print("data 1: ");
-    Serial.println(data[1]);
-    Serial.println("data 2: ");
-    Serial.println(data[2]);
   }
+
+  //Memproyeksikan pengiriman ke dalam serial monitor
+  Serial.print("data 1: ");
+  Serial.print(data[1]);
+  Serial.print("\t");
+  Serial.print("data 2: ");
+  Serial.println(data[2]);
 
   // Kirim data melalui radio
   radio.write(&data, sizeof(data));
@@ -178,5 +178,4 @@ void robotMode() {
     delay(1000);
     return;
   }
-
 }
