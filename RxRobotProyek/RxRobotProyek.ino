@@ -75,23 +75,32 @@ void loop() {
     int mode = data[0];
     //Pengecekan Data mode
     Serial.print("Mode: ");
-    Serial.println(mode);
-    
+    //    delay(100);
+
     if (mode == 1) {
+      Serial.print("Mobil \t");
       //Menjalankan Fungsi Penggerak mobil
       carMode();
-      Serial.println("Mobil");
+      
       //Menetapkan posisi gripper terakhir
       myservo1.write(posX);
       myservo2.write(posY);
-      
       delay(50);
+      
     } else {
       berhenti(0, 0);
+      Serial.print("Gripper \t");
       servoMode();
-      Serial.println("Gripper");
       delay(50);
+      
     }
+
+    
+    Serial.print("data 1: ");
+    Serial.print(data[1]);
+    Serial.print("\t");
+    Serial.print("data 2: ");
+    Serial.println(data[2]);
 
 
   } else {
@@ -108,27 +117,26 @@ void loop() {
 }
 
 void servoMode() {
-  
-  Serial.print("data 1: \t");
-  Serial.println(data[1]);
-  Serial.println("data 2: ");
-  Serial.println(data[2]);
+  // Ubah nilai potensio menjadi sudut
+
   int servoX = data[2];
   int servoY = data[1];
-  
-  if (servoX >= 4) { 
+
+  // Menggerakkan servo hanya jika ada perubahan sudut
+  //  if (servoX != prevServoX) {
+  if (servoX >= 4) {
     posX = posX + 10;
-    Serial.print("posX = ");
-    Serial.println(posX);
+//    Serial.print("posX = ");
+//    Serial.println(posX);
     delay(20);
 
   } else if (servoX <= -4) {
     posX = posX - 10;
-   Serial.print("posX = ");
-   Serial.println(posX);
+//    Serial.print("posX = ");
+//    Serial.println(posX);
     delay(20);
   }
-  
+
   if (servoY > 4) {
     posY = posY + 4;
     delay(20);
@@ -138,49 +146,46 @@ void servoMode() {
     delay(20);
   }
 
-  if (posX >180 ){
+  if (posX > 180 ) {
     posX = 180;
-  }else if(posX < 0){
+  } else if (posX < 0) {
     posX = 0;
-  }else if(posY > 180){
+  } else if (posY > 180) {
     posY = 180;
-  }else if(posY < 0){
+  } else if (posY < 0) {
     posY = 0;
   }
-
 
   myservo1.write(posX);
   myservo2.write(posY);
 
-  //  // Tunggu sebentar sebelum membaca kode berikutnya
+  // Tunggu sebentar sebelum membaca nilai potensio berikutnya
   delay(50);
 }
 
 void carMode() {
 
-  Serial.print("data 1: ");
-  Serial.println(data[1]);
-  Serial.println("data 2: ");
-  Serial.println(data[2]);
-
+  Serial.print("Kondisi: ");
   if (data[1] > 3) {
     //forward
     maju();
-    Serial.println("MAJU");
+    Serial.print("MAJU \t");
   } else if (data[1] < -3) {
     //backward
     mundur();
-    Serial.println("MUNDUR");
+    Serial.print("MUNDUR \t");
   } else if (data[2] > 3) {
     //left
     kiri();
-    Serial.println("KIRI");
+    Serial.print("KIRI \t");
   } else if (data[2] < -3) {
     //right
     kanan();
-    Serial.println("KANAN");
+    Serial.print("KANAN \t");
   } else {
     //stop car
+    
+    Serial.print("Netral \t");
     RightSpd = 0;
     LeftSpd = 0;
   }
@@ -192,8 +197,7 @@ void carMode() {
 }
 
 void maju() {
-  //  analogWrite(enbA, spdA);
-  //  analogWrite(enbB, spdB);
+  
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
@@ -205,6 +209,8 @@ void maju() {
 }
 
 void mundur() {
+  //  analogWrite(enbA, spdA);
+  //  analogWrite(enbB, spdB);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
